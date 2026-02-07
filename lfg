@@ -1,137 +1,132 @@
-import { useState, useEffect, useRef } from "react";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOP SEO Calculadoras — Gamificado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,500;9..40,700;9..40,800&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#080c14;color:#e2e8f0;font-family:'DM Sans','Segoe UI',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:rgba(255,255,255,.03)}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.35)}50%{box-shadow:0 0 0 10px rgba(245,158,11,0)}}
+@keyframes glow{0%,100%{text-shadow:0 0 20px rgba(245,158,11,.3)}50%{text-shadow:0 0 40px rgba(245,158,11,.6)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.mono{font-family:'Space Mono',monospace}
+.code{font-family:'JetBrains Mono','Fira Code',monospace}
+.badge-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;animation:fadeIn .3s}
+.badge-card{background:linear-gradient(145deg,#1e293b,#0f172a);border:2px solid #f59e0b;border-radius:28px;padding:52px 48px;text-align:center;box-shadow:0 0 100px rgba(245,158,11,.2);animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);max-width:400px;width:90%}
+.prompt-block{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.07);border-radius:14px;margin-bottom:20px;overflow:hidden}
+.prompt-toggle{width:100%;background:none;border:none;color:#e2e8f0;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;text-align:left}
+.prompt-toggle:hover{background:rgba(255,255,255,.02)}
+.prompt-body{padding:0 22px 22px}
+.prompt-pre{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:18px;color:#cbd5e1;font-size:12.5px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-word;max-height:520px;overflow-y:auto;font-family:'JetBrains Mono','Fira Code',monospace}
+.copy-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#94a3b8;padding:6px 16px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .25s;font-family:inherit;font-weight:600}
+.copy-btn.copied{background:#22c55e;color:#fff}
+.info-box{border-radius:12px;padding:18px;margin-top:16px}
+.section-title{color:#e2e8f0;font-size:16px;font-weight:700;margin-top:32px;margin-bottom:14px;font-family:'Space Mono',monospace;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:10px}
+.step-list{color:#cbd5e1;font-size:14px;line-height:2.2;padding-left:22px;margin:0}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;cursor:pointer;font-size:14px;line-height:1.5;transition:color .2s}
+.check-box{width:22px;height:22px;min-width:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;margin-top:1px}
+.phase-card{border-radius:16px;padding:20px 24px;cursor:pointer;transition:all .2s}
+.phase-card:hover{transform:translateX(4px)}
+.complete-btn{width:100%;padding:18px 24px;border:none;border-radius:14px;color:#000;font-size:16px;font-weight:800;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:1px;transition:transform .15s}
+.complete-btn:active{transform:scale(.97)}
+.nav-bar{background:rgba(0,0,0,.5);border-bottom:1px solid rgba(255,255,255,.06);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)}
+.back-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#94a3b8;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;font-weight:600;transition:all .2s}
+.back-btn:hover{background:rgba(255,255,255,.1);color:#e2e8f0}
+.sub-tab{padding:12px 22px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:all .2s;border:none;color:#fff}
+.hero-grid{position:absolute;inset:0;opacity:.04;background-image:linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);background-size:48px 48px}
+</style>
+</head>
+<body>
+<div id="app"></div>
 
-/* ═══════════════════════════════════════════════════════════════
-   DATA
-   ═══════════════════════════════════════════════════════════════ */
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
 const PHASES = [
-  { id: 1, icon: "💡", title: "Generar 100 Ideas de Nichos", subtitle: "Opciones infinitas. Elige la que TE APASIONE.", time: "8-10 min", xp: 150, output: "Lista de 100 nichos viables", badge: "IDEATOR", badgeIcon: "🧠" },
-  { id: 2, icon: "🔍", title: "Análisis Competencia & Arquitectura", subtitle: "Espía a la competencia. Luego, supéralos.", time: "15-20 min", xp: 250, output: "Lista de URLs con análisis", badge: "STRATEGIST", badgeIcon: "🎯" },
-  { id: 3, icon: "🔑", title: "Keyword Research Profundo", subtitle: "Encuentra las palabras clave que Google ADORA.", time: "12-15 min", xp: 300, output: "Inputs organizados para cada URL", badge: "KEYWORD HUNTER", badgeIcon: "🏹" },
-  { id: 4, icon: "⚙️", title: "Crear URLs (Calc + Blog + Tools)", subtitle: "Cada página = un archivo .html independiente", time: "5-10 min c/u", xp: 500, output: "N URLs SEO optimizadas", badge: "BUILDER", badgeIcon: "🏗️" },
-  { id: 5, icon: "⚖️", title: "Crear Páginas Legales", subtitle: "Protección legal. Necesarias para operar.", time: "25-30 min", xp: 200, output: "Privacidad, Términos, Aviso Legal", badge: "COMPLIANT", badgeIcon: "🛡️" },
-  { id: 6, icon: "🏠", title: "Página Inicio + Header/Footer", subtitle: "Tu vitrina al mundo.", time: "15-17 min", xp: 250, output: "index.html + header-footer.html", badge: "ARCHITECT", badgeIcon: "🏛️" },
-  { id: 7, icon: "✅", title: "QA Final & Publicación", subtitle: "Últimas revisiones. Luego: al mundo.", time: "10-15 min", xp: 350, output: "Sitio completamente funcional", badge: "LAUNCHER", badgeIcon: "🚀" },
+  { id:1, icon:"💡", title:"Generar 100 Ideas de Nichos", subtitle:"Opciones infinitas. Elige la que TE APASIONE.", time:"8-10 min", xp:150, output:"Lista de 100 nichos viables", badge:"IDEATOR", badgeIcon:"🧠" },
+  { id:2, icon:"🔍", title:"Análisis Competencia & Arquitectura", subtitle:"Espía a la competencia. Luego, supéralos.", time:"15-20 min", xp:250, output:"Lista de URLs con análisis", badge:"STRATEGIST", badgeIcon:"🎯" },
+  { id:3, icon:"🔑", title:"Keyword Research Profundo", subtitle:"Encuentra las palabras clave que Google ADORA.", time:"12-15 min", xp:300, output:"Inputs organizados para cada URL", badge:"KEYWORD HUNTER", badgeIcon:"🏹" },
+  { id:4, icon:"⚙️", title:"Crear URLs (Calc + Blog + Tools)", subtitle:"Cada página = un archivo .html independiente", time:"5-10 min c/u", xp:500, output:"N URLs SEO optimizadas", badge:"BUILDER", badgeIcon:"🏗️" },
+  { id:5, icon:"⚖️", title:"Crear Páginas Legales", subtitle:"Protección legal. Necesarias para operar.", time:"25-30 min", xp:200, output:"Privacidad, Términos, Aviso Legal", badge:"COMPLIANT", badgeIcon:"🛡️" },
+  { id:6, icon:"🏠", title:"Página Inicio + Header/Footer", subtitle:"Tu vitrina al mundo.", time:"15-17 min", xp:250, output:"index.html + header-footer.html", badge:"ARCHITECT", badgeIcon:"🏛️" },
+  { id:7, icon:"✅", title:"QA Final & Publicación", subtitle:"Últimas revisiones. Luego: al mundo.", time:"10-15 min", xp:350, output:"Sitio completamente funcional", badge:"LAUNCHER", badgeIcon:"🚀" },
 ];
-const TOTAL_XP = PHASES.reduce((s, p) => s + p.xp, 0);
+const TOTAL_XP = PHASES.reduce((s,p) => s + p.xp, 0);
 
-/* ═══════════════════════════════════════════════════════════════
-   SMALL COMPONENTS
-   ═══════════════════════════════════════════════════════════════ */
+// ── Helpers ──
 function CopyBtn({ text }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }} style={{
-      background: copied ? "#22c55e" : "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)",
-      color: copied ? "#fff" : "#94a3b8", padding: "6px 16px", borderRadius: 8, fontSize: 12,
-      cursor: "pointer", transition: "all .25s", fontFamily: "inherit", fontWeight: 600,
-    }}>{copied ? "✓ Copiado" : "📋 Copiar prompt"}</button>
-  );
+  const [c, setC] = useState(false);
+  return <button className={`copy-btn${c?' copied':''}`} onClick={(e)=>{e.stopPropagation();navigator.clipboard.writeText(text);setC(true);setTimeout(()=>setC(false),2000)}}>{c?"✓ Copiado":"📋 Copiar prompt"}</button>;
 }
 
 function PromptBlock({ title, prompt, note }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ background: "rgba(0,0,0,.3)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 14, marginBottom: 20, overflow: "hidden" }}>
-      <button onClick={() => setOpen(!open)} style={{
-        width: "100%", background: "none", border: "none", color: "#e2e8f0",
-        padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between",
-        cursor: "pointer", fontFamily: "inherit", fontSize: 15, fontWeight: 700, textAlign: "left",
-      }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ color: "#f59e0b", fontSize: 18 }}>📄</span>{title}
-        </span>
-        <span style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform .3s", fontSize: 11, opacity: .4 }}>▼</span>
+    <div className="prompt-block">
+      <button className="prompt-toggle" onClick={()=>setOpen(!open)}>
+        <span style={{display:'flex',alignItems:'center',gap:10}}><span style={{color:'#f59e0b',fontSize:18}}>📄</span>{title}</span>
+        <span style={{transform:open?'rotate(180deg)':'rotate(0)',transition:'transform .3s',fontSize:11,opacity:.4}}>▼</span>
       </button>
-      {open && (
-        <div style={{ padding: "0 22px 22px" }}>
-          {note && <p style={{ color: "#f59e0b", fontSize: 13, marginBottom: 14, fontStyle: "italic", lineHeight: 1.5 }}>{note}</p>}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}><CopyBtn text={prompt} /></div>
-          <pre style={{
-            background: "rgba(0,0,0,.5)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10,
-            padding: 18, color: "#cbd5e1", fontSize: 12.5, lineHeight: 1.7, overflowX: "auto",
-            whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 520, overflowY: "auto",
-            fontFamily: "'JetBrains Mono','Fira Code',monospace",
-          }}>{prompt}</pre>
-        </div>
-      )}
+      {open && <div className="prompt-body">
+        {note && <p style={{color:'#f59e0b',fontSize:13,marginBottom:14,fontStyle:'italic',lineHeight:1.5}}>{note}</p>}
+        <div style={{display:'flex',justifyContent:'flex-end',marginBottom:10}}><CopyBtn text={prompt}/></div>
+        <pre className="prompt-pre">{prompt}</pre>
+      </div>}
     </div>
   );
 }
 
-function InfoBox({ color, borderColor, children }) {
-  return (
-    <div style={{ background: `${color}08`, border: `1px solid ${borderColor}30`, borderRadius: 12, padding: 18, marginTop: 16 }}>
-      {children}
-    </div>
-  );
+function InfoBox({ color, children }) {
+  return <div className="info-box" style={{background:`${color}10`,border:`1px solid ${color}30`}}>{children}</div>;
+}
+
+function SectionTitle({ children }) {
+  return <h3 className="section-title">{children}</h3>;
+}
+
+function StepList({ steps }) {
+  return <ol className="step-list">{steps.map((s,i)=><li key={i}>{s}</li>)}</ol>;
 }
 
 function CheckItem({ label, checked, onChange }) {
   return (
-    <label style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "7px 0", cursor: "pointer", color: checked ? "#22c55e" : "#94a3b8", transition: "color .2s", fontSize: 14, lineHeight: 1.5 }}>
-      <input type="checkbox" checked={checked} onChange={onChange} style={{ display: "none" }} />
-      <span style={{ width: 22, height: 22, minWidth: 22, borderRadius: 6, border: checked ? "2px solid #22c55e" : "2px solid rgba(255,255,255,.18)", background: checked ? "rgba(34,197,94,.12)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, transition: "all .2s", marginTop: 1 }}>{checked ? "✓" : ""}</span>
-      <span style={{ textDecoration: checked ? "line-through" : "none", opacity: checked ? .55 : 1 }}>{label}</span>
+    <label className="check-item" style={{color:checked?'#22c55e':'#94a3b8'}}>
+      <span className="check-box" style={{border:checked?'2px solid #22c55e':'2px solid rgba(255,255,255,.18)',background:checked?'rgba(34,197,94,.12)':'transparent'}}>{checked?"✓":""}</span>
+      <span style={{textDecoration:checked?'line-through':'none',opacity:checked?.55:1}}>{label}</span>
+      <input type="checkbox" checked={checked} onChange={onChange} style={{display:'none'}}/>
     </label>
   );
 }
 
 function BadgePopup({ badge, icon, onClose }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,.75)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn .3s" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: "linear-gradient(145deg,#1e293b,#0f172a)", border: "2px solid #f59e0b", borderRadius: 28,
-        padding: "52px 60px", textAlign: "center", boxShadow: "0 0 100px rgba(245,158,11,.2)", animation: "popIn .4s cubic-bezier(.175,.885,.32,1.275)", maxWidth: 400,
-      }}>
-        <div style={{ fontSize: 72, marginBottom: 20 }}>{icon}</div>
-        <div style={{ color: "#f59e0b", fontSize: 12, fontWeight: 700, letterSpacing: 5, marginBottom: 8, fontFamily: "'Space Mono',monospace" }}>BADGE DESBLOQUEADO</div>
-        <div style={{ color: "#f1f5f9", fontSize: 30, fontWeight: 800, marginBottom: 28, fontFamily: "'Space Mono',monospace" }}>{badge}</div>
-        <button onClick={onClose} style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", border: "none", color: "#000", fontWeight: 800, padding: "14px 36px", borderRadius: 14, cursor: "pointer", fontSize: 15, fontFamily: "inherit" }}>¡CONTINUAR!</button>
+    <div className="badge-overlay" onClick={onClose}>
+      <div className="badge-card" onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:72,marginBottom:20}}>{icon}</div>
+        <div className="mono" style={{color:'#f59e0b',fontSize:12,fontWeight:700,letterSpacing:5,marginBottom:8}}>BADGE DESBLOQUEADO</div>
+        <div className="mono" style={{color:'#f1f5f9',fontSize:30,fontWeight:800,marginBottom:28}}>{badge}</div>
+        <button onClick={onClose} style={{background:'linear-gradient(135deg,#f59e0b,#d97706)',border:'none',color:'#000',fontWeight:800,padding:'14px 36px',borderRadius:14,cursor:'pointer',fontSize:15,fontFamily:'inherit'}}>¡SIGUIENTE FASE!</button>
       </div>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SECTION HEADER — reused inside every phase screen
-   ═══════════════════════════════════════════════════════════════ */
-function SectionTitle({ children }) {
-  return <h3 style={{ color: "#e2e8f0", fontSize: 16, fontWeight: 700, marginTop: 32, marginBottom: 14, fontFamily: "'Space Mono',monospace", borderBottom: "1px solid rgba(255,255,255,.06)", paddingBottom: 10 }}>{children}</h3>;
-}
+// ══════════════════════════════════════
+// PROMPTS (stored as constants)
+// ══════════════════════════════════════
 
-function StepList({ steps }) {
-  return (
-    <ol style={{ color: "#cbd5e1", fontSize: 14, lineHeight: 2.2, paddingLeft: 22, margin: 0 }}>
-      {steps.map((s, i) => <li key={i}>{s}</li>)}
-    </ol>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   PHASE SCREENS (all prompts/content preserved 100 %)
-   ═══════════════════════════════════════════════════════════════ */
-
-function Phase1Screen() {
-  return (<>
-    <SectionTitle>🎯 Objetivo</SectionTitle>
-    <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8 }}>
-      Generar <strong style={{ color: "#f59e0b" }}>100 ideas de nichos SEO</strong> rentables para sitios de calculadoras. Cada nicho validado con volumen real, viabilidad y potencial monetario.
-    </p>
-
-    <SectionTitle>📝 Pasos a seguir</SectionTitle>
-    <StepList steps={[
-      "Copia el prompt de abajo",
-      "Personaliza SOLO el campo [PAÍS-DESTINO] (ej: Alemania, España, etc.)",
-      "Pega el prompt en tu IA preferida",
-      "Recibe la tabla CSV con 100 nichos",
-      "Elige 1 nicho — el que MÁS te apasione",
-    ]} />
-
-    <SectionTitle>📄 Prompt: Generador de 100 Ideas (v3.0)</SectionTitle>
-    <PromptBlock
-      title="PROMPT 1 — Generador de 100 Ideas de Nichos SEO"
-      note="Formato de salida: CSV. Personaliza SOLO [PAÍS-DESTINO]."
-      prompt={`=== GENERADOR DE 100 IDEAS DE NICHOS SEO RENTABLES ===
+const P1 = `=== GENERADOR DE 100 IDEAS DE NICHOS SEO RENTABLES ===
 
 CONTEXTO:
 Soy emprendedor digital que quiere crear sitios de calculadoras online para ganar dinero.
@@ -182,37 +177,9 @@ REGLAS IMPORTANTES:
 - Considera demanda REAL, no especulación
 
 AHORA GENERA LOS 100 NICHOS.
-Responde en formato CSV directo (sin preamble ni explicaciones).`}
-    />
+Responde en formato CSV directo (sin preamble ni explicaciones).`;
 
-    <InfoBox color="#f59e0b" borderColor="#f59e0b">
-      <p style={{ color: "#fbbf24", fontSize: 14, margin: 0, fontWeight: 700 }}>📋 Output esperado</p>
-      <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 8, marginBottom: 0 }}>CSV con 100 filas: Ranking | Nicho | Palabra Clave | Volumen | Viabilidad | Justificación | Potencial | Categoría</p>
-    </InfoBox>
-  </>);
-}
-
-function Phase2Screen() {
-  return (<>
-    <SectionTitle>🎯 Objetivo</SectionTitle>
-    <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8 }}>
-      Analizar los <strong style={{ color: "#f59e0b" }}>TOP 10 competidores</strong> de tu nicho elegido, encontrar gaps de oportunidad, y diseñar la arquitectura completa de URLs de tu sitio.
-    </p>
-
-    <SectionTitle>📝 Pasos a seguir</SectionTitle>
-    <StepList steps={[
-      "Toma el nicho que elegiste en la Fase 1",
-      "Personaliza los campos: [NICHO-ELEGIDO], [PALABRA-CLAVE-PRINCIPAL], [PAÍS-IDIOMA]",
-      "Copia y pega el prompt en tu IA",
-      "Obtén el análisis de competencia + arquitectura recomendada",
-      "Guarda la tabla de arquitectura — la necesitarás en la Fase 3",
-    ]} />
-
-    <SectionTitle>📄 Prompt: Análisis Competencia & Arquitectura (v2.0)</SectionTitle>
-    <PromptBlock
-      title="PROMPT 2 — Análisis de Competencia & Arquitectura de URLs"
-      note="Personaliza: [NICHO-ELEGIDO], [PALABRA-CLAVE-PRINCIPAL], [PAÍS-IDIOMA]"
-      prompt={`=== ANÁLISIS COMPETIDOR & ARQUITECTURA DE URLs ===
+const P2 = `=== ANÁLISIS COMPETIDOR & ARQUITECTURA DE URLs ===
 
 CONTEXTO:
 Elegí el nicho: [NICHO-ELEGIDO]
@@ -292,37 +259,9 @@ FORMATO FINAL DE ARQUITECTURA (TABLA):
 | 3 | HERRAMIENTA | /comparador/ | [kw] | [vol] | [dif] | [razón] |
 | ... | ... | ... | ... | ... | ... | ... |
 
-RESPONDE TODAS LAS PARTES EN ORDEN.`}
-    />
+RESPONDE TODAS LAS PARTES EN ORDEN.`;
 
-    <InfoBox color="#f59e0b" borderColor="#f59e0b">
-      <p style={{ color: "#fbbf24", fontSize: 14, margin: 0, fontWeight: 700 }}>📋 Output esperado</p>
-      <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 8, marginBottom: 0 }}>Análisis detallado con tabla final de arquitectura de URLs (Prioridad | Tipo | URL | KW | Volumen | Dificultad | Por Qué)</p>
-    </InfoBox>
-  </>);
-}
-
-function Phase3Screen() {
-  return (<>
-    <SectionTitle>🎯 Objetivo</SectionTitle>
-    <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8 }}>
-      Identificar <strong style={{ color: "#f59e0b" }}>100+ keywords reales</strong>, organizarlas por URL destino, y generar los <strong style={{ color: "#f59e0b" }}>bloques JSON de inputs</strong> que usarás directamente en la Fase 4 para crear cada página.
-    </p>
-
-    <SectionTitle>📝 Pasos a seguir</SectionTitle>
-    <StepList steps={[
-      "Toma la arquitectura de URLs de la Fase 2",
-      "Personaliza: [NICHO], [PALABRA-CLAVE-PRINCIPAL], [IDIOMA], [PAÍS], [URLS-ARQUITECTURA]",
-      "Pega el prompt en tu IA",
-      "Recibe: tabla de 100+ keywords + bloques JSON por URL + resumen ejecutivo",
-      "Guarda TODO en un documento — cada bloque JSON es input directo para Fase 4",
-    ]} />
-
-    <SectionTitle>📄 Prompt: Keyword Research + Inputs Fase 4 (v3.0)</SectionTitle>
-    <PromptBlock
-      title="PROMPT 3 — Keyword Research Profundo + Inputs para Fase 4"
-      note="Personaliza: [NICHO], [PALABRA-CLAVE-PRINCIPAL], [IDIOMA], [PAÍS], [URLS-ARQUITECTURA]"
-      prompt={`=== KEYWORD RESEARCH PROFUNDO (100+ KEYWORDS) + INPUTS FASE 4 ===
+const P3 = `=== KEYWORD RESEARCH PROFUNDO (100+ KEYWORDS) + INPUTS FASE 4 ===
 
 CONTEXTO:
 Nicho: [NICHO]
@@ -458,64 +397,9 @@ RESPONDE CON:
 2. Bloques de inputs para CADA URL
 3. Resumen ejecutivo
 
-El formato de los bloques es CRÍTICO para que se copie directo en los prompts de Fase 4.`}
-    />
+El formato de los bloques es CRÍTICO para que se copie directo en los prompts de Fase 4.`;
 
-    <InfoBox color="#22c55e" borderColor="#22c55e">
-      <p style={{ color: "#4ade80", fontSize: 14, fontWeight: 700, margin: 0 }}>✅ Checklist de salida — Fase 3</p>
-      <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 10, lineHeight: 2 }}>
-        <div>☑ 100+ keywords identificadas y justificadas</div>
-        <div>☑ Bloques JSON listos para copiar en Fase 4</div>
-        <div>☑ Agrupados por URL</div>
-        <div>☑ Toda la información necesaria para crear cada página</div>
-      </div>
-    </InfoBox>
-    <InfoBox color="#f59e0b" borderColor="#f59e0b">
-      <p style={{ color: "#fbbf24", fontSize: 13, margin: 0 }}>⚠️ <strong>IMPORTANTE:</strong> Cada bloque JSON es una "plantilla" que copiarás en el prompt correcto de Fase 4. Guarda TODO en un documento.</p>
-    </InfoBox>
-  </>);
-}
-
-function Phase4Screen() {
-  const [subTab, setSubTab] = useState("calc");
-  return (<>
-    <SectionTitle>🎯 Objetivo</SectionTitle>
-    <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8 }}>
-      Crear <strong style={{ color: "#f59e0b" }}>cada página de tu sitio</strong> una por una: calculadoras, artículos de blog y herramientas/comparadores. Cada una como un archivo <code style={{ color: "#f59e0b" }}>.html</code> independiente.
-    </p>
-
-    <SectionTitle>📝 Flujo de trabajo (repite por cada URL)</SectionTitle>
-    <StepList steps={[
-      "Copia el bloque JSON correspondiente de la Fase 3",
-      "Elige el prompt correcto: 4A (Calculadora), 4B (Blog), 4C (Herramienta)",
-      "Reemplaza todos los campos [entre_corchetes] con tus datos",
-      "Pega el prompt en tu IA y obtén el HTML completo",
-      "Guarda como archivo [url_amigable].html",
-      "Repite para la siguiente URL — sin límite, crea tantas como necesites",
-    ]} />
-
-    <InfoBox color="#f59e0b" borderColor="#f59e0b">
-      <p style={{ color: "#fbbf24", fontSize: 14, margin: 0, fontWeight: 700 }}>💡 No hay límite. Puedes crear 5 URLs, 20 URLs, 100 URLs. Una por una.</p>
-    </InfoBox>
-
-    <SectionTitle>📄 Elige el tipo de página</SectionTitle>
-    <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-      {[
-        { k: "calc", label: "⚙️ Calculadora (4A)", c: "#3b82f6" },
-        { k: "blog", label: "📝 Blog (4B)", c: "#8b5cf6" },
-        { k: "tool", label: "🔧 Herramienta (4C)", c: "#ec4899" },
-      ].map(t => (
-        <button key={t.k} onClick={() => setSubTab(t.k)} style={{
-          background: subTab === t.k ? t.c : "rgba(255,255,255,.05)",
-          border: subTab === t.k ? "none" : "1px solid rgba(255,255,255,.1)",
-          color: "#fff", padding: "12px 22px", borderRadius: 10, cursor: "pointer",
-          fontSize: 14, fontWeight: 700, fontFamily: "inherit", transition: "all .2s",
-        }}>{t.label}</button>
-      ))}
-    </div>
-
-    {subTab === "calc" && (<>
-      <PromptBlock title="PROMPT 4A — Generador de Calculadora HTML+JS (v3.0)" note="USO: Uno por cada calculadora. Repite para cada nueva." prompt={`=== GENERADOR DE CALCULADORA - HTML + JAVASCRIPT COMPLETO ===
+const P4A = `=== GENERADOR DE CALCULADORA - HTML + JAVASCRIPT COMPLETO ===
 
 DATOS DE LA CALCULADORA (Copia del bloque JSON de Fase 3):
 ========================================================
@@ -586,25 +470,19 @@ ESTRUCTURA HTML (OBLIGATORIA):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>[palabra_clave_principal] - Calculadora Online Gratis</title>
   <meta name="description" content="[descripcion]. Rápido, preciso y sin registro.">
-  <style>
-    [CSS PROFESIONAL CON COLORES ESPECIFICADOS]
-  </style>
+  <style>[CSS PROFESIONAL CON COLORES ESPECIFICADOS]</style>
 </head>
 <body>
   <div class="container">
     <main class="calc-section">
       <h1>[nombre_pagina]</h1>
       <p class="subtitle">[descripcion]</p>
-      
       <div class="input-group">
         <label for="input1">[Nombre input 1]</label>
         <input type="number" id="input1" placeholder="Ej: [ejemplo]">
       </div>
-      
       [REPITE PARA CADA INPUT]
-      
       <button onclick="calcular()">[cta_principal]</button>
-      
       <div class="result" id="resultado">
         <div class="result-item">
           <span class="result-label">[Output 1]</span>
@@ -612,7 +490,6 @@ ESTRUCTURA HTML (OBLIGATORIA):
         </div>
         [REPITE PARA CADA OUTPUT]
       </div>
-      
       <div class="info-box">
         ℹ️ Los resultados son aproximados. Consulta un asesor para decisiones financieras.
       </div>
@@ -635,17 +512,9 @@ ESTRUCTURA HTML (OBLIGATORIA):
       var input1 = parseFloat(document.getElementById("input1").value);
       var input2 = parseFloat(document.getElementById("input2").value);
       var input3 = parseFloat(document.getElementById("input3").value);
-      
-      if (!input1 || !input2 || !input3) {
-        alert("Por favor completa todos los campos");
-        return;
-      }
-      
+      if (!input1 || !input2 || !input3) { alert("Por favor completa todos los campos"); return; }
       [AQUÍ VA LA LÓGICA DEL CÁLCULO]
-      
       document.getElementById("res1").textContent = resultado1;
-      document.getElementById("res2").textContent = resultado2;
-      document.getElementById("res3").textContent = resultado3;
       document.getElementById("resultado").classList.add("show");
     }
   </script>
@@ -653,8 +522,6 @@ ESTRUCTURA HTML (OBLIGATORIA):
 </html>
 
 REQUISITOS DE CALIDAD:
-======================
-
 ✅ El código funciona al copiarlo tal cual
 ✅ Validación de inputs (error si vacío)
 ✅ Resultados matemáticamente correctos
@@ -664,7 +531,6 @@ REQUISITOS DE CALIDAD:
 ✅ Sin errores ortográficos
 
 GENERA AHORA:
-
 1. HTML COMPLETO (copy-paste ready)
 2. CSS profesional inline
 3. JavaScript funcional
@@ -672,15 +538,9 @@ GENERA AHORA:
 5. Schema JSON-LD correcto
 
 El output debe ser UN ÚNICO BLOQUE HTML que se guarde como .html y funcione.
+Incluye comentarios sobre dónde personalizar si el usuario quiere cambiar inputs.`;
 
-Incluye comentarios sobre dónde personalizar si el usuario quiere cambiar inputs.`} />
-      <InfoBox color="#3b82f6" borderColor="#3b82f6">
-        <p style={{ color: "#60a5fa", fontSize: 13, margin: 0 }}>⏱ <strong>5-8 min</strong> por calculadora → Guarda como <code style={{ color: "#60a5fa" }}>[url_amigable].html</code></p>
-      </InfoBox>
-    </>)}
-
-    {subTab === "blog" && (<>
-      <PromptBlock title="PROMPT 4B — Generador de Artículo Blog HTML+SEO (v3.0)" note="USO: Uno por cada artículo. Repite para cada nuevo blog." prompt={`=== GENERADOR DE ARTÍCULO BLOG - HTML COMPLETO ===
+const P4B = `=== GENERADOR DE ARTÍCULO BLOG - HTML COMPLETO ===
 
 DATOS DEL ARTÍCULO (Copia del bloque JSON de Fase 3):
 ====================================================
@@ -746,11 +606,8 @@ ESTRUCTURA REQUERIDA:
 ESPECIFICACIONES SEO:
 ====================
 
-Title tag (60 caracteres máx):
-[nombre_pagina] | Guía 2025
-
-Meta description (155 caracteres máx):
-[descripcion]. Aprende ahora.
+Title tag (60 caracteres máx): [nombre_pagina] | Guía 2025
+Meta description (155 caracteres máx): [descripcion]. Aprende ahora.
 
 Estructura de headers:
 - 1x H1 (título principal)
@@ -768,23 +625,9 @@ Internal linking:
 ESPECIFICACIONES DE CONTENIDO:
 ==============================
 
-1. TONO:
-   - Conversacional (como explicar a un amigo)
-   - Evitar jerga técnica
-   - Usa "tú/usted" (segundo persona)
-   - Emojis: 0-2 máximo
-
-2. FORMATO:
-   - Párrafos de 2-3 oraciones máximo
-   - Listas de puntos (cuando aplique)
-   - Números y datos verificables
-   - Ejemplos concretos
-
-3. CALIDAD:
-   - Sin relleno
-   - Sin spam de keywords
-   - Información verificable
-   - Actualizado para 2025
+1. TONO: Conversacional, evitar jerga, usa "tú/usted", emojis: 0-2 máximo
+2. FORMATO: Párrafos 2-3 oraciones, listas cuando aplique, números verificables
+3. CALIDAD: Sin relleno, sin spam de keywords, info verificable, actualizado 2025
 
 ESTRUCTURA HTML (OBLIGATORIA):
 
@@ -795,66 +638,42 @@ ESTRUCTURA HTML (OBLIGATORIA):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>[nombre_pagina] | Guía 2025</title>
   <meta name="description" content="[descripcion]. Aprende ahora.">
-  <style>
-    [CSS PROFESIONAL]
-  </style>
+  <style>[CSS PROFESIONAL]</style>
 </head>
 <body>
   <div class="container">
     <article>
       <h1>[nombre_pagina]</h1>
       <p class="intro">[INTRODUCCIÓN 80-120 palabras]</p>
-      
       <h2>[SUBTEMA 1]</h2>
-      <p>[CONTENIDO 250-350 palabras, incluye palabra clave LSI]</p>
-      
+      <p>[CONTENIDO 250-350 palabras]</p>
       <h2>[SUBTEMA 2]</h2>
-      <p>[CONTENIDO 250-350 palabras, incluye palabra clave LSI]</p>
-      
+      <p>[CONTENIDO 250-350 palabras]</p>
       <h2>[SUBTEMA 3]</h2>
-      <p>[CONTENIDO 250-350 palabras, incluye palabra clave LSI]</p>
-      
+      <p>[CONTENIDO 250-350 palabras]</p>
       <h2>Cómo Usar Nuestra Calculadora</h2>
-      <p>[PASO A PASO CON LINK A CALCULADORA]</p>
+      <p>[PASO A PASO CON LINK]</p>
       <p><a href="/[url-calculadora]/">Ir a la calculadora →</a></p>
-      
       <h2>Conclusión</h2>
-      <p>[CONCLUSIÓN CON CTA FINAL A CALCULADORA]</p>
+      <p>[CONCLUSIÓN CON CTA FINAL]</p>
     </article>
   </div>
-
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": "[nombre_pagina]",
-    "description": "[descripcion]",
-    "datePublished": "2025-02-07",
-    "author": {
-      "@type": "Organization",
-      "name": "[Nombre tu sitio]"
-    }
-  }
+  { "@context":"https://schema.org", "@type":"BlogPosting", "headline":"[nombre_pagina]", "description":"[descripcion]", "datePublished":"2025-02-07", "author":{"@type":"Organization","name":"[Nombre tu sitio]"} }
   </script>
 </body>
 </html>
 
 GENERA AHORA:
-
 1. Artículo COMPLETO con estructura anterior
 2. HTML listo para copiar y pegar
 3. Meta tags perfecto
 4. Schema JSON-LD para blog
 5. Links a calculadora naturales y contextuales
 
-El output debe ser UN ÚNICO BLOQUE HTML que funcione.`} />
-      <InfoBox color="#8b5cf6" borderColor="#8b5cf6">
-        <p style={{ color: "#a78bfa", fontSize: 13, margin: 0 }}>⏱ <strong>8-10 min</strong> por artículo → Guarda como <code style={{ color: "#a78bfa" }}>blog-[url_amigable].html</code></p>
-      </InfoBox>
-    </>)}
+El output debe ser UN ÚNICO BLOQUE HTML que funcione.`;
 
-    {subTab === "tool" && (<>
-      <PromptBlock title="PROMPT 4C — Generador de Herramienta/Comparador HTML (v3.0)" note="USO: Para herramientas, comparadores, o páginas interactivas." prompt={`=== GENERADOR DE HERRAMIENTA/COMPARADOR - HTML COMPLETO ===
+const P4C = `=== GENERADOR DE HERRAMIENTA/COMPARADOR - HTML COMPLETO ===
 
 DATOS (Copia del bloque JSON de Fase 3):
 ========================================
@@ -889,50 +708,20 @@ ESTRUCTURA:
     <main>
       <h1>[nombre_pagina]</h1>
       <p>[descripcion]</p>
-      
       [CREA LA INTERFAZ SEGÚN LA HERRAMIENTA]
-      
       <button onclick="procesar()">[cta_principal]</button>
-      
-      <div class="result" id="resultado">
-        [MUESTRA RESULTADOS]
-      </div>
+      <div class="result" id="resultado">[MUESTRA RESULTADOS]</div>
     </main>
   </div>
-  
   <script>
-    function procesar() {
-      // [LÓGICA DE LA HERRAMIENTA]
-    }
+    function procesar() { /* [LÓGICA DE LA HERRAMIENTA] */ }
   </script>
 </body>
 </html>
 
-GENERA AHORA HTML COMPLETO Y FUNCIONAL.`} />
-      <InfoBox color="#ec4899" borderColor="#ec4899">
-        <p style={{ color: "#f472b6", fontSize: 13, margin: 0 }}>⏱ <strong>10-12 min</strong> por herramienta → Guarda como <code style={{ color: "#f472b6" }}>[url_amigable].html</code></p>
-      </InfoBox>
-    </>)}
-  </>);
-}
+GENERA AHORA HTML COMPLETO Y FUNCIONAL.`;
 
-function Phase5Screen() {
-  return (<>
-    <SectionTitle>🎯 Objetivo</SectionTitle>
-    <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8 }}>
-      Crear las <strong style={{ color: "#f59e0b" }}>3 páginas legales obligatorias</strong>: Política de Privacidad, Términos de Servicio y Aviso Legal. Cumplimiento RGPD/LOPD.
-    </p>
-
-    <SectionTitle>📝 Pasos a seguir</SectionTitle>
-    <StepList steps={[
-      "Ejecuta el prompt 3 veces, cambiando [TIPO-PAGINA] cada vez",
-      "Primera vez: POLÍTICA DE PRIVACIDAD → guarda como política-privacidad.html",
-      "Segunda vez: TÉRMINOS DE SERVICIO → guarda como términos-servicio.html",
-      "Tercera vez: AVISO LEGAL → guarda como aviso-legal.html",
-    ]} />
-
-    <SectionTitle>📄 Prompt: Generador de Páginas Legales (v2.0)</SectionTitle>
-    <PromptBlock title="PROMPT 5 — Generador de Páginas Legales" note="Repite 3 veces cambiando [TIPO-PAGINA]. Personaliza: [NOMBRE-SITIO], [DOMINIO], [EMAIL-CONTACTO], [PAÍS]" prompt={`=== GENERADOR DE PÁGINAS LEGALES ===
+const P5 = `=== GENERADOR DE PÁGINAS LEGALES ===
 
 PARÁMETROS:
 ===========
@@ -957,7 +746,6 @@ IMPORTANTE:
 ESTRUCTURA POR TIPO:
 
 --- SI ES POLÍTICA DE PRIVACIDAD ---
-
 1. Introducción
 2. Responsable del tratamiento
 3. Base legal
@@ -968,7 +756,6 @@ ESTRUCTURA POR TIPO:
 8. Contacto
 
 --- SI SON TÉRMINOS DE SERVICIO ---
-
 1. Aceptación de términos
 2. Uso del sitio
 3. Propiedad intelectual
@@ -979,7 +766,6 @@ ESTRUCTURA POR TIPO:
 8. Contacto
 
 --- SI ES AVISO LEGAL ---
-
 1. Identificación del sitio
 2. Responsabilidad
 3. Propiedad intelectual
@@ -989,7 +775,7 @@ ESTRUCTURA POR TIPO:
 7. Cambios en el sitio
 8. Contacto y jurisdicción
 
-ESTRUCTURA HTML (TODAS LAS PÁGINAS):
+ESTRUCTURA HTML:
 
 <!DOCTYPE html>
 <html lang="es">
@@ -998,27 +784,18 @@ ESTRUCTURA HTML (TODAS LAS PÁGINAS):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>[TIPO-PAGINA] - [NOMBRE-SITIO]</title>
   <meta name="description" content="[TIPO-PAGINA] de [NOMBRE-SITIO]">
-  <style>
-    [CSS SIMPLE, MISMO ESTILO QUE OTRAS PÁGINAS]
-  </style>
+  <style>[CSS SIMPLE]</style>
 </head>
 <body>
   <div class="container">
     <main class="legal-content">
       <h1>[TIPO-PAGINA]</h1>
-      
       <p><strong>Última actualización:</strong> 7 de febrero de 2025</p>
-      
-      <h2>1. Sección 1</h2>
-      <p>[CONTENIDO]</p>
-      
-      <h2>2. Sección 2</h2>
-      <p>[CONTENIDO]</p>
-      
+      <h2>1. Sección 1</h2><p>[CONTENIDO]</p>
+      <h2>2. Sección 2</h2><p>[CONTENIDO]</p>
       [REPITE PARA OTRAS SECCIONES]
-      
       <h2>Contacto</h2>
-      <p>Si tienes preguntas, contáctanos en: <a href="mailto:[EMAIL-CONTACTO]">[EMAIL-CONTACTO]</a></p>
+      <p>Si tienes preguntas: <a href="mailto:[EMAIL-CONTACTO]">[EMAIL-CONTACTO]</a></p>
     </main>
   </div>
 </body>
@@ -1030,31 +807,9 @@ IMPORTANTE:
 - No es asesoramiento legal (disclaimer)
 - Debe cumplir con RGPD/LOPD [PAÍS]
 - Profesional y completo
-- Listo para publicar`} />
+- Listo para publicar`;
 
-    <InfoBox color="#ef4444" borderColor="#ef4444">
-      <p style={{ color: "#f87171", fontSize: 14, fontWeight: 700, margin: 0 }}>⚠️ Disclaimer</p>
-      <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 8, marginBottom: 0 }}>Estas páginas NO reemplazan asesoramiento legal. Para sitios con usuarios en UE, es recomendable consultar a un abogado especializado en protección de datos.</p>
-    </InfoBox>
-  </>);
-}
-
-function Phase6Screen() {
-  return (<>
-    <SectionTitle>🎯 Objetivo</SectionTitle>
-    <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8 }}>
-      Crear la <strong style={{ color: "#f59e0b" }}>página de inicio</strong> (hero + grid de calculadoras + blog preview) y el <strong style={{ color: "#f59e0b" }}>header/footer compartido</strong> que usarán todas las páginas.
-    </p>
-
-    <SectionTitle>📝 Pasos a seguir</SectionTitle>
-    <StepList steps={[
-      "Primero: crea la página de inicio con el Prompt 6 → guarda como index.html",
-      "Segundo: crea el header/footer con el Prompt 7 → guarda como header-footer.html",
-      "El header-footer.html se carga en todas las páginas vía <iframe>",
-    ]} />
-
-    <SectionTitle>📄 Prompt 6: Página de Inicio (v3.0)</SectionTitle>
-    <PromptBlock title="PROMPT 6 — Generador de Página Inicio HTML" note="Personaliza: [NOMBRE-SITIO], [TAGLINE-CORTO], [DESCRIPCIÓN-LARGA], [URLS-CALCULADORAS], [URLS-ARTICULOS-BLOG]" prompt={`=== GENERADOR DE PÁGINA INICIO - HTML COMPLETO ===
+const P6 = `=== GENERADOR DE PÁGINA INICIO - HTML COMPLETO ===
 
 DATOS:
 ======
@@ -1090,10 +845,9 @@ GENERA HTML COMPLETO, HERMOSO Y RESPONSIVE.
 
 Colores: Gradiente azul (#667eea) a púrpura (#764ba2)
 Diseño: Moderno, limpio, profesional
-Mobile: Se ve perfecto en 375px`} />
+Mobile: Se ve perfecto en 375px`;
 
-    <SectionTitle>📄 Prompt 7: Header & Footer Compartido (v2.0)</SectionTitle>
-    <PromptBlock title="PROMPT 7 — Generador de Header & Footer" note="Personaliza: [NOMBRE-MARCA], [DOMINIO], [URLS-MENU]" prompt={`=== GENERADOR DE HEADER & FOOTER COMPARTIDO ===
+const P7 = `=== GENERADOR DE HEADER & FOOTER COMPARTIDO ===
 
 DATOS:
 ======
@@ -1129,330 +883,279 @@ FOOTER:
 - Copyright
 - Hover effects
 
-ESTRUCTURA:
+GENERA HTML COMPLETO CON HEADER Y FOOTER.`;
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <style>[CSS COMPLETO AQUÍ]</style>
-</head>
-<body>
+// ══════════════════════════════════════
+// PHASE SCREENS
+// ══════════════════════════════════════
 
-<header>
-  <div class="header-container">
-    <a href="/" class="logo">[NOMBRE-MARCA]</a>
-    <nav>
-      <ul>
-        [LINKS DEL MENÚ AQUÍ]
-      </ul>
-    </nav>
-  </div>
-</header>
-
-<footer>
-  <div class="footer-container">
-    [COLUMNAS DE LINKS AQUÍ]
-  </div>
-  <div class="footer-bottom">
-    <p>&copy; 2025 [NOMBRE-MARCA]. Todos los derechos reservados.</p>
-  </div>
-</footer>
-
-</body>
-</html>
-
-GENERA HTML COMPLETO CON HEADER Y FOOTER.`} />
-
-    <InfoBox color="#f59e0b" borderColor="#f59e0b">
-      <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>📌 El <code style={{ color: "#f59e0b" }}>header-footer.html</code> se cargará en TODAS las páginas vía <code style={{ color: "#f59e0b" }}>&lt;iframe src="/header-footer.html"&gt;</code></p>
-    </InfoBox>
+function Phase1() {
+  return (<>
+    <SectionTitle>🎯 Objetivo</SectionTitle>
+    <p style={{color:'#94a3b8',fontSize:14,lineHeight:1.8}}>Generar <strong style={{color:'#f59e0b'}}>100 ideas de nichos SEO</strong> rentables para sitios de calculadoras. Cada nicho validado con volumen real, viabilidad y potencial monetario.</p>
+    <SectionTitle>📝 Pasos a seguir</SectionTitle>
+    <StepList steps={["Copia el prompt de abajo","Personaliza SOLO el campo [PAÍS-DESTINO] (ej: Alemania, España…)","Pega el prompt en tu IA preferida","Recibe la tabla CSV con 100 nichos","Elige 1 nicho — el que MÁS te apasione"]} />
+    <SectionTitle>📄 Prompt: Generador de 100 Ideas (v3.0)</SectionTitle>
+    <PromptBlock title="PROMPT 1 — Generador de 100 Ideas de Nichos SEO" note="Formato de salida: CSV. Personaliza SOLO [PAÍS-DESTINO]." prompt={P1} />
+    <InfoBox color="#f59e0b"><p style={{color:'#fbbf24',fontSize:14,margin:0,fontWeight:700}}>📋 Output esperado</p><p style={{color:'#94a3b8',fontSize:13,marginTop:8,marginBottom:0}}>CSV con 100 filas: Ranking | Nicho | Palabra Clave | Volumen | Viabilidad | Justificación | Potencial | Categoría</p></InfoBox>
   </>);
 }
 
-function Phase7Screen() {
-  const qaCategories = [
-    { title: "Funcionalidad", items: ["Todas las calculadoras funcionan (probé con números reales)","Resultados son matemáticamente precisos","Validación de inputs funciona","Se ve bien en móvil (375px)","Se ve bien en desktop (1200px+)","Header/Footer se carga en TODAS las páginas","No hay 404 errors"] },
-    { title: "SEO", items: ["Cada página tiene <title> único con palabra clave","Cada página tiene <meta description> único","Una sola <h1> por página","H2/H3 estructurados lógicamente","URLs amigables","Schema JSON-LD en cada página","Images con alt text","Sitemap.xml creado","Internal links funcionan"] },
-    { title: "Contenido", items: ["Sin errores ortográficos","Copy profesional","Links internos funcionan","CTAs claros y visibles","Información verificable","Página legal incluida"] },
-    { title: "Rendimiento", items: ["Sitio carga en < 3 segundos","Sin errores en consola","Sin dependencias externas","CSS es minimal"] },
-    { title: "Legal", items: ["Política de privacidad presente","Términos de servicio presentes","Aviso legal presente","Links a legales en footer"] },
+function Phase2() {
+  return (<>
+    <SectionTitle>🎯 Objetivo</SectionTitle>
+    <p style={{color:'#94a3b8',fontSize:14,lineHeight:1.8}}>Analizar los <strong style={{color:'#f59e0b'}}>TOP 10 competidores</strong> de tu nicho elegido, encontrar gaps de oportunidad, y diseñar la arquitectura completa de URLs.</p>
+    <SectionTitle>📝 Pasos a seguir</SectionTitle>
+    <StepList steps={["Toma el nicho que elegiste en la Fase 1","Personaliza: [NICHO-ELEGIDO], [PALABRA-CLAVE-PRINCIPAL], [PAÍS-IDIOMA]","Copia y pega el prompt en tu IA","Obtén análisis de competencia + arquitectura recomendada","Guarda la tabla de arquitectura — la necesitarás en la Fase 3"]} />
+    <SectionTitle>📄 Prompt: Análisis Competencia & Arquitectura (v2.0)</SectionTitle>
+    <PromptBlock title="PROMPT 2 — Análisis de Competencia & Arquitectura URLs" note="Personaliza: [NICHO-ELEGIDO], [PALABRA-CLAVE-PRINCIPAL], [PAÍS-IDIOMA]" prompt={P2} />
+    <InfoBox color="#f59e0b"><p style={{color:'#fbbf24',fontSize:14,margin:0,fontWeight:700}}>📋 Output esperado</p><p style={{color:'#94a3b8',fontSize:13,marginTop:8,marginBottom:0}}>Análisis detallado + tabla de arquitectura (Prioridad | Tipo | URL | KW | Volumen | Dificultad | Por Qué)</p></InfoBox>
+  </>);
+}
+
+function Phase3() {
+  return (<>
+    <SectionTitle>🎯 Objetivo</SectionTitle>
+    <p style={{color:'#94a3b8',fontSize:14,lineHeight:1.8}}>Identificar <strong style={{color:'#f59e0b'}}>100+ keywords reales</strong>, organizarlas por URL destino, y generar los <strong style={{color:'#f59e0b'}}>bloques JSON de inputs</strong> que usarás directamente en la Fase 4.</p>
+    <SectionTitle>📝 Pasos a seguir</SectionTitle>
+    <StepList steps={["Toma la arquitectura de URLs de la Fase 2","Personaliza: [NICHO], [PALABRA-CLAVE-PRINCIPAL], [IDIOMA], [PAÍS], [URLS-ARQUITECTURA]","Pega el prompt en tu IA","Recibe: tabla de 100+ keywords + bloques JSON por URL + resumen ejecutivo","Guarda TODO en un documento — cada bloque JSON es input directo para Fase 4"]} />
+    <SectionTitle>📄 Prompt: Keyword Research + Inputs Fase 4 (v3.0)</SectionTitle>
+    <PromptBlock title="PROMPT 3 — Keyword Research Profundo + Inputs Fase 4" note="Personaliza: [NICHO], [PALABRA-CLAVE-PRINCIPAL], [IDIOMA], [PAÍS], [URLS-ARQUITECTURA]" prompt={P3} />
+    <InfoBox color="#22c55e">
+      <p style={{color:'#4ade80',fontSize:14,fontWeight:700,margin:0}}>✅ Checklist de salida — Fase 3</p>
+      <div style={{color:'#94a3b8',fontSize:13,marginTop:10,lineHeight:2}}>
+        <div>☑ 100+ keywords identificadas y justificadas</div>
+        <div>☑ Bloques JSON listos para copiar en Fase 4</div>
+        <div>☑ Agrupados por URL</div>
+        <div>☑ Toda la información necesaria para crear cada página</div>
+      </div>
+    </InfoBox>
+    <InfoBox color="#f59e0b"><p style={{color:'#fbbf24',fontSize:13,margin:0}}>⚠️ <strong>IMPORTANTE:</strong> Cada bloque JSON es una "plantilla" que copiarás en el prompt correcto de Fase 4. Guarda TODO.</p></InfoBox>
+  </>);
+}
+
+function Phase4() {
+  const [sub, setSub] = useState('calc');
+  return (<>
+    <SectionTitle>🎯 Objetivo</SectionTitle>
+    <p style={{color:'#94a3b8',fontSize:14,lineHeight:1.8}}>Crear <strong style={{color:'#f59e0b'}}>cada página de tu sitio</strong> una por una: calculadoras, artículos de blog y herramientas/comparadores. Cada una como un archivo <code style={{color:'#f59e0b'}}>.html</code> independiente.</p>
+    <SectionTitle>📝 Flujo de trabajo (repite por cada URL)</SectionTitle>
+    <StepList steps={["Copia el bloque JSON correspondiente de la Fase 3","Elige el prompt correcto: 4A (Calculadora), 4B (Blog), 4C (Herramienta)","Reemplaza todos los campos [entre_corchetes] con tus datos","Pega el prompt en tu IA y obtén el HTML completo","Guarda como archivo [url_amigable].html","Repite para la siguiente URL — sin límite"]} />
+    <InfoBox color="#f59e0b"><p style={{color:'#fbbf24',fontSize:14,margin:0,fontWeight:700}}>💡 No hay límite. Puedes crear 5 URLs, 20 URLs, 100 URLs. Una por una.</p></InfoBox>
+    <SectionTitle>📄 Elige el tipo de página</SectionTitle>
+    <div style={{display:'flex',gap:8,marginBottom:24,flexWrap:'wrap'}}>
+      {[{k:'calc',l:'⚙️ Calculadora (4A)',c:'#3b82f6'},{k:'blog',l:'📝 Blog (4B)',c:'#8b5cf6'},{k:'tool',l:'🔧 Herramienta (4C)',c:'#ec4899'}].map(t=>
+        <button key={t.k} className="sub-tab" onClick={()=>setSub(t.k)} style={{background:sub===t.k?t.c:'rgba(255,255,255,.05)',border:sub===t.k?'none':'1px solid rgba(255,255,255,.1)'}}>{t.l}</button>
+      )}
+    </div>
+    {sub==='calc' && <><PromptBlock title="PROMPT 4A — Generador de Calculadora HTML+JS (v3.0)" note="USO: Uno por cada calculadora. Repite para cada nueva." prompt={P4A}/><InfoBox color="#3b82f6"><p style={{color:'#60a5fa',fontSize:13,margin:0}}>⏱ <strong>5-8 min</strong> por calculadora → Guarda como <code style={{color:'#60a5fa'}}>[url_amigable].html</code></p></InfoBox></>}
+    {sub==='blog' && <><PromptBlock title="PROMPT 4B — Generador de Blog HTML+SEO (v3.0)" note="USO: Uno por cada artículo. Repite para cada nuevo blog." prompt={P4B}/><InfoBox color="#8b5cf6"><p style={{color:'#a78bfa',fontSize:13,margin:0}}>⏱ <strong>8-10 min</strong> por artículo → Guarda como <code style={{color:'#a78bfa'}}>blog-[url_amigable].html</code></p></InfoBox></>}
+    {sub==='tool' && <><PromptBlock title="PROMPT 4C — Generador de Herramienta/Comparador (v3.0)" note="USO: Para herramientas, comparadores, páginas interactivas." prompt={P4C}/><InfoBox color="#ec4899"><p style={{color:'#f472b6',fontSize:13,margin:0}}>⏱ <strong>10-12 min</strong> por herramienta → Guarda como <code style={{color:'#f472b6'}}>[url_amigable].html</code></p></InfoBox></>}
+  </>);
+}
+
+function Phase5() {
+  return (<>
+    <SectionTitle>🎯 Objetivo</SectionTitle>
+    <p style={{color:'#94a3b8',fontSize:14,lineHeight:1.8}}>Crear las <strong style={{color:'#f59e0b'}}>3 páginas legales obligatorias</strong>: Política de Privacidad, Términos de Servicio y Aviso Legal. Cumplimiento RGPD/LOPD.</p>
+    <SectionTitle>📝 Pasos a seguir</SectionTitle>
+    <StepList steps={["Ejecuta el prompt 3 veces, cambiando [TIPO-PAGINA] cada vez","1ª: POLÍTICA DE PRIVACIDAD → política-privacidad.html","2ª: TÉRMINOS DE SERVICIO → términos-servicio.html","3ª: AVISO LEGAL → aviso-legal.html"]} />
+    <SectionTitle>📄 Prompt: Generador de Páginas Legales (v2.0)</SectionTitle>
+    <PromptBlock title="PROMPT 5 — Generador de Páginas Legales" note="Repite 3 veces cambiando [TIPO-PAGINA]. Personaliza: [NOMBRE-SITIO], [DOMINIO], [EMAIL-CONTACTO], [PAÍS]" prompt={P5} />
+    <InfoBox color="#ef4444"><p style={{color:'#f87171',fontSize:14,fontWeight:700,margin:0}}>⚠️ Disclaimer</p><p style={{color:'#94a3b8',fontSize:13,marginTop:8,marginBottom:0}}>Estas páginas NO reemplazan asesoramiento legal. Para sitios con usuarios en UE, consulta a un abogado especializado.</p></InfoBox>
+  </>);
+}
+
+function Phase6() {
+  return (<>
+    <SectionTitle>🎯 Objetivo</SectionTitle>
+    <p style={{color:'#94a3b8',fontSize:14,lineHeight:1.8}}>Crear la <strong style={{color:'#f59e0b'}}>página de inicio</strong> y el <strong style={{color:'#f59e0b'}}>header/footer compartido</strong> que usarán todas las páginas.</p>
+    <SectionTitle>📝 Pasos a seguir</SectionTitle>
+    <StepList steps={["Primero: crea la página de inicio con Prompt 6 → index.html","Segundo: crea el header/footer con Prompt 7 → header-footer.html","El header-footer.html se carga en todas las páginas vía <iframe>"]} />
+    <SectionTitle>📄 Prompt 6: Página de Inicio (v3.0)</SectionTitle>
+    <PromptBlock title="PROMPT 6 — Generador de Página Inicio HTML" note="Personaliza: [NOMBRE-SITIO], [TAGLINE-CORTO], [DESCRIPCIÓN-LARGA], [URLS-CALCULADORAS], [URLS-ARTICULOS-BLOG]" prompt={P6} />
+    <SectionTitle>📄 Prompt 7: Header & Footer (v2.0)</SectionTitle>
+    <PromptBlock title="PROMPT 7 — Generador de Header & Footer" note="Personaliza: [NOMBRE-MARCA], [DOMINIO], [URLS-MENU]" prompt={P7} />
+    <InfoBox color="#f59e0b"><p style={{color:'#94a3b8',fontSize:13,margin:0}}>📌 El <code style={{color:'#f59e0b'}}>header-footer.html</code> se cargará en TODAS las páginas vía <code style={{color:'#f59e0b'}}>&lt;iframe&gt;</code></p></InfoBox>
+  </>);
+}
+
+function Phase7() {
+  const cats = [
+    {t:"Funcionalidad",i:["Todas las calculadoras funcionan (probé con números reales)","Resultados son matemáticamente precisos","Validación de inputs funciona","Se ve bien en móvil (375px)","Se ve bien en desktop (1200px+)","Header/Footer se carga en TODAS las páginas","No hay 404 errors"]},
+    {t:"SEO",i:["Cada página tiene <title> único con KW","Cada página tiene <meta description> único","Una sola <h1> por página","H2/H3 estructurados lógicamente","URLs amigables","Schema JSON-LD en cada página","Images con alt text","Sitemap.xml creado","Internal links funcionan"]},
+    {t:"Contenido",i:["Sin errores ortográficos","Copy profesional","Links internos funcionan","CTAs claros y visibles","Información verificable","Página legal incluida"]},
+    {t:"Rendimiento",i:["Sitio carga en < 3 seg","Sin errores en consola","Sin dependencias externas","CSS es minimal"]},
+    {t:"Legal",i:["Política de privacidad presente","Términos de servicio presentes","Aviso legal presente","Links a legales en footer"]},
   ];
-  const [checks, setChecks] = useState({});
-  const totalItems = qaCategories.reduce((s, c) => s + c.items.length, 0);
-  const checkedCount = Object.values(checks).filter(Boolean).length;
-  const pct = Math.round((checkedCount / totalItems) * 100);
+  const [ch, setCh] = useState({});
+  const total = cats.reduce((s,c)=>s+c.i.length,0);
+  const done = Object.values(ch).filter(Boolean).length;
+  const pct = Math.round((done/total)*100);
 
   return (<>
     <SectionTitle>🎯 Objetivo</SectionTitle>
-    <p style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.8 }}>
-      Revisar <strong style={{ color: "#f59e0b" }}>TODO</strong> el sitio con el checklist de QA, verificar que funciona correctamente, y <strong style={{ color: "#22c55e" }}>publicar en Cloudflare Pages</strong>.
-    </p>
-
-    <SectionTitle>✅ Checklist de QA ({checkedCount}/{totalItems})</SectionTitle>
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ height: 8, background: "rgba(255,255,255,.05)", borderRadius: 4 }}>
-        <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "#22c55e" : "linear-gradient(90deg,#f59e0b,#ef4444)", borderRadius: 4, transition: "width .4s" }} />
-      </div>
-      <p style={{ color: pct === 100 ? "#22c55e" : "#64748b", fontSize: 12, marginTop: 6, fontFamily: "'Space Mono',monospace" }}>{pct}% completado</p>
+    <p style={{color:'#94a3b8',fontSize:14,lineHeight:1.8}}>Revisar <strong style={{color:'#f59e0b'}}>TODO</strong> el sitio con el checklist de QA y <strong style={{color:'#22c55e'}}>publicar en Cloudflare Pages</strong>.</p>
+    <SectionTitle>✅ Checklist de QA ({done}/{total})</SectionTitle>
+    <div style={{marginBottom:16}}>
+      <div style={{height:8,background:'rgba(255,255,255,.05)',borderRadius:4}}><div style={{height:'100%',width:`${pct}%`,background:pct===100?'#22c55e':'linear-gradient(90deg,#f59e0b,#ef4444)',borderRadius:4,transition:'width .4s'}}/></div>
+      <p className="mono" style={{color:pct===100?'#22c55e':'#64748b',fontSize:12,marginTop:6}}>{pct}% completado</p>
     </div>
-
-    {qaCategories.map((cat, ci) => (
-      <div key={ci} style={{ marginBottom: 20 }}>
-        <h4 style={{ color: "#cbd5e1", fontSize: 14, marginBottom: 6 }}>{cat.title}</h4>
-        {cat.items.map((item, ii) => {
-          const key = `${ci}-${ii}`;
-          return <CheckItem key={key} label={item} checked={!!checks[key]} onChange={() => setChecks(p => ({ ...p, [key]: !p[key] }))} />;
-        })}
-      </div>
-    ))}
-
+    {cats.map((c,ci)=><div key={ci} style={{marginBottom:20}}>
+      <h4 style={{color:'#cbd5e1',fontSize:14,marginBottom:6}}>{c.t}</h4>
+      {c.i.map((item,ii)=>{const k=`${ci}-${ii}`;return <CheckItem key={k} label={item} checked={!!ch[k]} onChange={()=>setCh(p=>({...p,[k]:!p[k]}))}/> })}
+    </div>)}
     <SectionTitle>📋 Estructura Final de Carpetas</SectionTitle>
-    <pre style={{ background: "rgba(0,0,0,.4)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10, padding: 18, color: "#94a3b8", fontSize: 13, lineHeight: 1.8, fontFamily: "'JetBrains Mono','Fira Code',monospace", overflowX: "auto" }}>{`/tu-sitio-seo/
-├── index.html (página inicio)
-├── header-footer.html (compartido)
-│
+    <pre className="code" style={{background:'rgba(0,0,0,.4)',border:'1px solid rgba(255,255,255,.05)',borderRadius:10,padding:18,color:'#94a3b8',fontSize:13,lineHeight:1.8,overflowX:'auto'}}>{`/tu-sitio-seo/
+├── index.html
+├── header-footer.html
 ├── calculadoras/
 │   ├── hypothekenrechner.html
-│   ├── kreditrechner.html
-│   └── ... (tantas como necesites)
-│
+│   └── ...
 ├── blog/
 │   ├── blog-calcular-cuota.html
-│   └── ... (tantos como necesites)
-│
+│   └── ...
 ├── herramientas/
 │   └── comparador.html
-│
 ├── legal/
 │   ├── politica-privacidad.html
 │   ├── terminos-servicio.html
 │   └── aviso-legal.html
-│
 ├── sitemap.xml
-└── robots.txt (opcional)`}</pre>
-
+└── robots.txt`}</pre>
     <SectionTitle>🚀 Publicar en Cloudflare (5-10 min)</SectionTitle>
-    <StepList steps={[
-      "Abre cloudflare.com",
-      "Pages → Crear Proyecto",
-      "Direct Upload → Selecciona TODOS tus archivos",
-      "Deploy",
-      "Conecta tu dominio (si lo compraste en Cloudflare)",
-    ]} />
+    <StepList steps={["Abre cloudflare.com","Pages → Crear Proyecto","Direct Upload → Selecciona TODOS tus archivos","Deploy","Conecta tu dominio"]} />
   </>);
 }
 
-const PHASE_SCREENS = [Phase1Screen, Phase2Screen, Phase3Screen, Phase4Screen, Phase5Screen, Phase6Screen, Phase7Screen];
+const SCREENS = [Phase1, Phase2, Phase3, Phase4, Phase5, Phase6, Phase7];
 
-/* ═══════════════════════════════════════════════════════════════
-   MAIN APP
-   ═══════════════════════════════════════════════════════════════ */
-export default function App() {
-  const [completed, setCompleted] = useState([]);
-  const [activePhase, setActivePhase] = useState(null);
-  const [showBadge, setShowBadge] = useState(null);
-  const topRef = useRef(null);
+// ══════════════════════════════════════
+// MAIN APP
+// ══════════════════════════════════════
+function App() {
+  const [completed, setCompleted] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sop_completed') || '[]'); } catch { return []; }
+  });
+  const [active, setActive] = useState(null);
+  const [badge, setBadge] = useState(null);
 
-  const xpEarned = completed.reduce((s, id) => s + (PHASES.find(p => p.id === id)?.xp || 0), 0);
-  const pctTotal = Math.round((xpEarned / TOTAL_XP) * 100);
-  const level = completed.length === 0 ? "NOVATO" : completed.length <= 2 ? "APRENDIZ" : completed.length <= 4 ? "PRO" : completed.length <= 6 ? "EXPERTO" : "MAESTRO SEO";
+  useEffect(() => { try { localStorage.setItem('sop_completed', JSON.stringify(completed)); } catch {} }, [completed]);
+
+  const xp = completed.reduce((s,id) => s + (PHASES.find(p=>p.id===id)?.xp||0), 0);
+  const pct = Math.round((xp/TOTAL_XP)*100);
+  const level = completed.length===0?"NOVATO":completed.length<=2?"APRENDIZ":completed.length<=4?"PRO":completed.length<=6?"EXPERTO":"MAESTRO SEO";
   const allDone = completed.length === PHASES.length;
 
-  const completePhase = (id) => {
-    if (completed.includes(id)) return;
-    const p = PHASES.find(ph => ph.id === id);
-    setCompleted(prev => [...prev, id]);
-    setShowBadge(p);
+  const complete = (id) => {
+    if(completed.includes(id)) return;
+    setCompleted(p=>[...p,id]);
+    setBadge(PHASES.find(ph=>ph.id===id));
   };
 
-  const openPhase = (id) => { setActivePhase(id); };
-  const goBack = () => { setActivePhase(null); };
+  useEffect(() => { window.scrollTo({top:0,behavior:'smooth'}); }, [active]);
 
-  useEffect(() => { if (topRef.current) topRef.current.scrollIntoView({ behavior: "smooth" }); }, [activePhase]);
-
-  /* ─── PHASE DETAIL SCREEN ─── */
-  if (activePhase !== null) {
-    const phase = PHASES.find(p => p.id === activePhase);
+  // ── PHASE DETAIL VIEW ──
+  if (active !== null) {
+    const phase = PHASES.find(p=>p.id===active);
     const done = completed.includes(phase.id);
-    const PhaseScreen = PHASE_SCREENS[phase.id - 1];
-    const nextPhase = PHASES.find(p => p.id === phase.id + 1);
+    const Screen = SCREENS[phase.id-1];
+    const next = PHASES.find(p=>p.id===phase.id+1);
 
     return (
-      <div ref={topRef} style={{ minHeight: "100vh", background: "#080c14", color: "#e2e8f0", fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif" }}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap');
-          @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-          @keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
-          *{box-sizing:border-box;margin:0;padding:0}
-          ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:rgba(255,255,255,.03)}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
-        `}</style>
-
-        {showBadge && <BadgePopup badge={showBadge.badge} icon={showBadge.badgeIcon} onClose={() => setShowBadge(null)} />}
-
-        {/* Top bar */}
-        <div style={{ background: "rgba(0,0,0,.4)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)" }}>
-          <button onClick={goBack} style={{ background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "#94a3b8", padding: "8px 18px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontFamily: "inherit", fontWeight: 600 }}>← Volver al mapa</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ color: "#f59e0b", fontSize: 12, fontWeight: 700, fontFamily: "'Space Mono',monospace" }}>{xpEarned} XP</span>
-            <div style={{ width: 80, height: 6, background: "rgba(255,255,255,.06)", borderRadius: 3 }}>
-              <div style={{ height: "100%", width: `${pctTotal}%`, background: "linear-gradient(90deg,#f59e0b,#ef4444)", borderRadius: 3, transition: "width .5s" }} />
-            </div>
+      <div>
+        {badge && <BadgePopup badge={badge.badge} icon={badge.badgeIcon} onClose={()=>setBadge(null)}/>}
+        <div className="nav-bar">
+          <button className="back-btn" onClick={()=>setActive(null)}>← Volver al mapa</button>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <span className="mono" style={{color:'#f59e0b',fontSize:12,fontWeight:700}}>{xp} XP</span>
+            <div style={{width:80,height:6,background:'rgba(255,255,255,.06)',borderRadius:3}}><div style={{height:'100%',width:`${pct}%`,background:'linear-gradient(90deg,#f59e0b,#ef4444)',borderRadius:3,transition:'width .5s'}}/></div>
           </div>
         </div>
-
-        {/* Phase header */}
-        <div style={{ padding: "48px 20px 0", maxWidth: 780, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
-            <span style={{ fontSize: 36 }}>{phase.icon}</span>
+        <div style={{padding:'48px 20px 0',maxWidth:780,margin:'0 auto'}}>
+          <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:8}}>
+            <span style={{fontSize:36}}>{phase.icon}</span>
             <div>
-              <div style={{ color: "#64748b", fontSize: 12, fontWeight: 700, letterSpacing: 2, fontFamily: "'Space Mono',monospace" }}>FASE {phase.id} DE {PHASES.length}</div>
-              <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 800, color: "#f1f5f9", lineHeight: 1.2, marginTop: 4 }}>{phase.title}</h1>
+              <div className="mono" style={{color:'#64748b',fontSize:12,fontWeight:700,letterSpacing:2}}>FASE {phase.id} DE {PHASES.length}</div>
+              <h1 style={{fontSize:'clamp(22px,4vw,32px)',fontWeight:800,color:'#f1f5f9',lineHeight:1.2,marginTop:4}}>{phase.title}</h1>
             </div>
           </div>
-          <p style={{ color: "#64748b", fontSize: 15, marginBottom: 12 }}>{phase.subtitle}</p>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 32 }}>
-            <span style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 8, padding: "5px 14px", fontSize: 12, color: "#64748b", fontFamily: "'Space Mono',monospace" }}>⏱ {phase.time}</span>
-            <span style={{ background: done ? "rgba(34,197,94,.1)" : "rgba(245,158,11,.1)", border: `1px solid ${done ? "rgba(34,197,94,.2)" : "rgba(245,158,11,.2)"}`, borderRadius: 8, padding: "5px 14px", fontSize: 12, color: done ? "#4ade80" : "#f59e0b", fontWeight: 700, fontFamily: "'Space Mono',monospace" }}>{done ? "✓ COMPLETADA" : `+${phase.xp} XP`}</span>
-            <span style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 8, padding: "5px 14px", fontSize: 12, color: "#64748b", fontFamily: "'Space Mono',monospace" }}>🎯 {phase.output}</span>
+          <p style={{color:'#64748b',fontSize:15,marginBottom:12}}>{phase.subtitle}</p>
+          <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:32}}>
+            <span className="mono" style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:8,padding:'5px 14px',fontSize:12,color:'#64748b'}}>⏱ {phase.time}</span>
+            <span className="mono" style={{background:done?'rgba(34,197,94,.1)':'rgba(245,158,11,.1)',border:`1px solid ${done?'rgba(34,197,94,.2)':'rgba(245,158,11,.2)'}`,borderRadius:8,padding:'5px 14px',fontSize:12,color:done?'#4ade80':'#f59e0b',fontWeight:700}}>{done?"✓ COMPLETADA":`+${phase.xp} XP`}</span>
+            <span className="mono" style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:8,padding:'5px 14px',fontSize:12,color:'#64748b'}}>🎯 {phase.output}</span>
           </div>
         </div>
-
-        {/* Phase body */}
-        <div style={{ maxWidth: 780, margin: "0 auto", padding: "0 20px 60px", animation: "fadeIn .4s" }}>
-          <PhaseScreen />
-
-          {/* Complete / Next buttons */}
-          <div style={{ marginTop: 40, display: "flex", flexDirection: "column", gap: 12 }}>
-            {!done && (
-              <button onClick={() => completePhase(phase.id)} style={{
-                width: "100%", padding: "18px 24px",
-                background: "linear-gradient(135deg,#f59e0b,#d97706)", border: "none", borderRadius: 14,
-                color: "#000", fontSize: 16, fontWeight: 800, cursor: "pointer",
-                fontFamily: "'Space Mono',monospace", letterSpacing: 1,
-              }}>✅ COMPLETAR FASE {phase.id} — RECLAMAR +{phase.xp} XP</button>
-            )}
-            {done && nextPhase && (
-              <button onClick={() => openPhase(nextPhase.id)} style={{
-                width: "100%", padding: "18px 24px",
-                background: "linear-gradient(135deg,#22c55e,#16a34a)", border: "none", borderRadius: 14,
-                color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer",
-                fontFamily: "'Space Mono',monospace", letterSpacing: 1,
-              }}>→ AVANZAR A FASE {nextPhase.id}: {nextPhase.title}</button>
-            )}
-            {done && !nextPhase && (
-              <button onClick={goBack} style={{
-                width: "100%", padding: "18px 24px",
-                background: "linear-gradient(135deg,#22c55e,#16a34a)", border: "none", borderRadius: 14,
-                color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer",
-                fontFamily: "'Space Mono',monospace", letterSpacing: 1,
-              }}>🏆 VER RESUMEN FINAL</button>
-            )}
+        <div style={{maxWidth:780,margin:'0 auto',padding:'0 20px 60px',animation:'fadeIn .4s'}}>
+          <Screen/>
+          <div style={{marginTop:40,display:'flex',flexDirection:'column',gap:12}}>
+            {!done && <button className="complete-btn" onClick={()=>complete(phase.id)} style={{background:'linear-gradient(135deg,#f59e0b,#d97706)'}}>✅ COMPLETAR FASE {phase.id} — RECLAMAR +{phase.xp} XP</button>}
+            {done && next && <button className="complete-btn" onClick={()=>setActive(next.id)} style={{background:'linear-gradient(135deg,#22c55e,#16a34a)',color:'#fff'}}>→ AVANZAR A FASE {next.id}: {next.title}</button>}
+            {done && !next && <button className="complete-btn" onClick={()=>setActive(null)} style={{background:'linear-gradient(135deg,#22c55e,#16a34a)',color:'#fff'}}>🏆 VER RESUMEN FINAL</button>}
           </div>
         </div>
       </div>
     );
   }
 
-  /* ─── MAP SCREEN (Hub) ─── */
+  // ── MAP / HUB VIEW ──
   return (
-    <div ref={topRef} style={{ minHeight: "100vh", background: "#080c14", color: "#e2e8f0", fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap');
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        @keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
-        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.35)}50%{box-shadow:0 0 0 10px rgba(245,158,11,0)}}
-        @keyframes glow{0%,100%{text-shadow:0 0 20px rgba(245,158,11,.3)}50%{text-shadow:0 0 40px rgba(245,158,11,.6)}}
-        *{box-sizing:border-box;margin:0;padding:0}
-        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:rgba(255,255,255,.03)}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
-      `}</style>
-
-      {showBadge && <BadgePopup badge={showBadge.badge} icon={showBadge.badgeIcon} onClose={() => setShowBadge(null)} />}
+    <div>
+      {badge && <BadgePopup badge={badge.badge} icon={badge.badgeIcon} onClose={()=>setBadge(null)}/>}
 
       {/* HERO */}
-      <div style={{ background: "linear-gradient(170deg,#0c1220,#0a0f1a 40%,#111827)", borderBottom: "1px solid rgba(255,255,255,.04)", padding: "56px 20px 52px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, opacity: .04, backgroundImage: "linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
-        <div style={{ position: "relative", maxWidth: 700, margin: "0 auto" }}>
-          <div style={{ display: "inline-block", background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.25)", borderRadius: 8, padding: "6px 16px", fontSize: 12, fontWeight: 700, color: "#f59e0b", letterSpacing: 2, marginBottom: 20, fontFamily: "'Space Mono',monospace" }}>PROFESSIONAL v2</div>
-          <h1 style={{ fontSize: "clamp(28px,5vw,44px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 16, background: "linear-gradient(135deg,#f1f5f9,#94a3b8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Nichos SEO de Calculadoras
-          </h1>
-          <p style={{ fontSize: "clamp(15px,2.5vw,18px)", color: "#64748b", marginBottom: 36, lineHeight: 1.6 }}>
-            De <strong style={{ color: "#f59e0b" }}>IDEA</strong> a <strong style={{ color: "#22c55e" }}>SITIO PUBLICADO</strong> en 2.5-3 Horas
-          </p>
+      <div style={{background:'linear-gradient(170deg,#0c1220,#0a0f1a 40%,#111827)',borderBottom:'1px solid rgba(255,255,255,.04)',padding:'56px 20px 52px',textAlign:'center',position:'relative',overflow:'hidden'}}>
+        <div className="hero-grid"/>
+        <div style={{position:'relative',maxWidth:700,margin:'0 auto'}}>
+          <div className="mono" style={{display:'inline-block',background:'rgba(245,158,11,.1)',border:'1px solid rgba(245,158,11,.25)',borderRadius:8,padding:'6px 16px',fontSize:12,fontWeight:700,color:'#f59e0b',letterSpacing:2,marginBottom:20}}>PROFESSIONAL v2</div>
+          <h1 style={{fontSize:'clamp(28px,5vw,44px)',fontWeight:800,lineHeight:1.15,marginBottom:16,background:'linear-gradient(135deg,#f1f5f9,#94a3b8)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Nichos SEO de Calculadoras</h1>
+          <p style={{fontSize:'clamp(15px,2.5vw,18px)',color:'#64748b',marginBottom:36,lineHeight:1.6}}>De <strong style={{color:'#f59e0b'}}>IDEA</strong> a <strong style={{color:'#22c55e'}}>SITIO PUBLICADO</strong> en 2.5-3 Horas</p>
 
-          {/* XP */}
-          <div style={{ maxWidth: 420, margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-              <span style={{ color: "#f59e0b", fontWeight: 700, fontSize: 14, fontFamily: "'Space Mono',monospace", animation: completed.length > 0 ? "glow 2s infinite" : "none" }}>LVL: {level}</span>
-              <span style={{ color: "#64748b", fontSize: 13, fontFamily: "'Space Mono',monospace" }}>{xpEarned}/{TOTAL_XP} XP</span>
+          <div style={{maxWidth:420,margin:'0 auto'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:8}}>
+              <span className="mono" style={{color:'#f59e0b',fontWeight:700,fontSize:14,animation:completed.length>0?'glow 2s infinite':'none'}}>LVL: {level}</span>
+              <span className="mono" style={{color:'#64748b',fontSize:13}}>{xp}/{TOTAL_XP} XP</span>
             </div>
-            <div style={{ height: 10, background: "rgba(255,255,255,.04)", borderRadius: 5, border: "1px solid rgba(255,255,255,.06)", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${pctTotal}%`, background: pctTotal === 100 ? "linear-gradient(90deg,#22c55e,#16a34a)" : "linear-gradient(90deg,#f59e0b,#ef4444,#ec4899)", borderRadius: 5, transition: "width .8s cubic-bezier(.22,1,.36,1)", boxShadow: pctTotal > 0 ? "0 0 12px rgba(245,158,11,.3)" : "none" }} />
+            <div style={{height:10,background:'rgba(255,255,255,.04)',borderRadius:5,border:'1px solid rgba(255,255,255,.06)',overflow:'hidden'}}>
+              <div style={{height:'100%',width:`${pct}%`,background:pct===100?'linear-gradient(90deg,#22c55e,#16a34a)':'linear-gradient(90deg,#f59e0b,#ef4444,#ec4899)',borderRadius:5,transition:'width .8s cubic-bezier(.22,1,.36,1)',boxShadow:pct>0?'0 0 12px rgba(245,158,11,.3)':'none'}}/>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-              <span style={{ color: "#475569", fontSize: 11, fontFamily: "'Space Mono',monospace" }}>{completed.length}/{PHASES.length} fases</span>
-              <span style={{ color: "#475569", fontSize: 11, fontFamily: "'Space Mono',monospace" }}>{pctTotal}%</span>
+            <div className="mono" style={{display:'flex',justifyContent:'space-between',marginTop:6,fontSize:11,color:'#475569'}}>
+              <span>{completed.length}/{PHASES.length} fases</span><span>{pct}%</span>
             </div>
           </div>
 
-          {/* Badges */}
-          {completed.length > 0 && (
-            <div style={{ marginTop: 20, display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
-              {completed.map(id => { const p = PHASES.find(ph => ph.id === id); return (
-                <div key={id} style={{ background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.2)", borderRadius: 8, padding: "4px 12px", fontSize: 11, color: "#f59e0b", fontFamily: "'Space Mono',monospace", fontWeight: 700 }}>{p.badgeIcon} {p.badge}</div>
-              ); })}
-            </div>
-          )}
+          {completed.length > 0 && <div style={{marginTop:20,display:'flex',justifyContent:'center',gap:8,flexWrap:'wrap'}}>
+            {completed.map(id=>{const p=PHASES.find(ph=>ph.id===id);return <div key={id} className="mono" style={{background:'rgba(245,158,11,.1)',border:'1px solid rgba(245,158,11,.2)',borderRadius:8,padding:'4px 12px',fontSize:11,color:'#f59e0b',fontWeight:700}}>{p.badgeIcon} {p.badge}</div>})}
+          </div>}
         </div>
       </div>
 
-      {/* PHASE LIST — only show unlocked + next locked */}
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 20px 80px" }}>
-        {PHASES.map((phase, idx) => {
+      {/* PHASE LIST — only show completed + next unlocked */}
+      <div style={{maxWidth:680,margin:'0 auto',padding:'40px 20px 80px'}}>
+        {PHASES.map((phase,idx) => {
           const done = completed.includes(phase.id);
-          const unlocked = phase.id === 1 || completed.includes(phase.id - 1);
+          const unlocked = phase.id===1 || completed.includes(phase.id-1);
           const isNext = !done && unlocked;
-          // Hide phases that aren't done AND aren't the next unlocked one
           if (!done && !isNext) return null;
 
           return (
-            <div key={phase.id} style={{ position: "relative", paddingLeft: 52, marginBottom: 16 }}>
-              {/* Line */}
-              {idx < PHASES.length - 1 && done && (
-                <div style={{ position: "absolute", left: 21, top: 48, bottom: -16, width: 2, background: "rgba(34,197,94,.25)" }} />
-              )}
-              {/* Dot */}
-              <div style={{
-                position: "absolute", left: 8, top: 16, width: 28, height: 28, borderRadius: "50%",
-                background: done ? "#22c55e" : "#f59e0b",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, color: done ? "#fff" : "#000", fontWeight: 800,
-                fontFamily: "'Space Mono',monospace",
-                animation: isNext ? "pulse 2s infinite" : "none",
-              }}>{done ? "✓" : phase.id}</div>
-
-              <div
-                onClick={() => openPhase(phase.id)}
-                style={{
-                  background: isNext ? "linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02))" : "rgba(34,197,94,.03)",
-                  border: isNext ? "1px solid rgba(245,158,11,.25)" : "1px solid rgba(34,197,94,.12)",
-                  borderRadius: 16, padding: "20px 24px", cursor: "pointer",
-                  transition: "all .2s",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ fontSize: 24 }}>{phase.icon}</span>
+            <div key={phase.id} style={{position:'relative',paddingLeft:52,marginBottom:16}}>
+              {idx < PHASES.length-1 && done && <div style={{position:'absolute',left:21,top:48,bottom:-16,width:2,background:'rgba(34,197,94,.25)'}}/>}
+              <div style={{position:'absolute',left:8,top:16,width:28,height:28,borderRadius:'50%',background:done?'#22c55e':'#f59e0b',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:done?'#fff':'#000',fontWeight:800,fontFamily:"'Space Mono',monospace",animation:isNext?'pulse 2s infinite':'none'}}>{done?"✓":phase.id}</div>
+              <div className="phase-card" onClick={()=>setActive(phase.id)} style={{background:isNext?'linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02))':'rgba(34,197,94,.03)',border:isNext?'1px solid rgba(245,158,11,.25)':'1px solid rgba(34,197,94,.12)'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:10}}>
+                  <div style={{display:'flex',alignItems:'center',gap:12}}>
+                    <span style={{fontSize:24}}>{phase.icon}</span>
                     <div>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: done ? "#4ade80" : "#e2e8f0" }}>Fase {phase.id}: {phase.title}</div>
-                      <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{phase.subtitle}</div>
+                      <div style={{fontSize:16,fontWeight:700,color:done?'#4ade80':'#e2e8f0'}}>Fase {phase.id}: {phase.title}</div>
+                      <div style={{fontSize:12,color:'#64748b',marginTop:2}}>{phase.subtitle}</div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 6, padding: "4px 12px", fontSize: 11, color: "#64748b", fontFamily: "'Space Mono',monospace" }}>⏱ {phase.time}</span>
-                    <span style={{ background: done ? "rgba(34,197,94,.1)" : "rgba(245,158,11,.1)", border: `1px solid ${done ? "rgba(34,197,94,.2)" : "rgba(245,158,11,.2)"}`, borderRadius: 6, padding: "4px 12px", fontSize: 11, color: done ? "#4ade80" : "#f59e0b", fontWeight: 700, fontFamily: "'Space Mono',monospace" }}>{done ? "✓ DONE" : `+${phase.xp} XP`}</span>
-                    <span style={{ color: "#475569", fontSize: 16, marginLeft: 4 }}>→</span>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span className="mono" style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:6,padding:'4px 12px',fontSize:11,color:'#64748b'}}>⏱ {phase.time}</span>
+                    <span className="mono" style={{background:done?'rgba(34,197,94,.1)':'rgba(245,158,11,.1)',border:`1px solid ${done?'rgba(34,197,94,.2)':'rgba(245,158,11,.2)'}`,borderRadius:6,padding:'4px 12px',fontSize:11,color:done?'#4ade80':'#f59e0b',fontWeight:700}}>{done?"✓ DONE":`+${phase.xp} XP`}</span>
+                    <span style={{color:'#475569',fontSize:16,marginLeft:4}}>→</span>
                   </div>
                 </div>
               </div>
@@ -1460,54 +1163,51 @@ export default function App() {
           );
         })}
 
-        {/* All done summary */}
-        {allDone && (
-          <div style={{ marginTop: 48, padding: "44px 32px", background: "linear-gradient(145deg,rgba(34,197,94,.06),rgba(245,158,11,.04))", border: "2px solid rgba(34,197,94,.2)", borderRadius: 24, textAlign: "center", animation: "fadeIn .6s" }}>
-            <div style={{ fontSize: 60, marginBottom: 16 }}>🏆</div>
-            <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8, background: "linear-gradient(135deg,#22c55e,#f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Space Mono',monospace" }}>¡MISIÓN COMPLETA!</h2>
-            <p style={{ color: "#94a3b8", fontSize: 15, marginBottom: 32 }}>Has completado las 7 fases. Tu sitio SEO de calculadoras está listo para el mundo.</p>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12, marginBottom: 32 }}>
-              {["Investigación","100+ Keywords","N URLs creadas","SEO perfecto","Legal completo","Publicado"].map((l,i) => (
-                <div key={i} style={{ background: "rgba(34,197,94,.06)", border: "1px solid rgba(34,197,94,.12)", borderRadius: 10, padding: 12, fontSize: 12, color: "#4ade80", fontWeight: 600 }}>✅ {l}</div>
-              ))}
-            </div>
-
-            <h3 style={{ color: "#e2e8f0", fontSize: 16, marginBottom: 14, fontFamily: "'Space Mono',monospace" }}>📈 Próximos Pasos</h3>
-            <div style={{ textAlign: "left", maxWidth: 420, margin: "0 auto", color: "#94a3b8", fontSize: 13, lineHeight: 2.4 }}>
-              <div><strong style={{ color: "#f59e0b" }}>Semana 1:</strong> Monitorea Google Analytics</div>
-              <div><strong style={{ color: "#f59e0b" }}>Semana 2-4:</strong> Crea 2-3 backlinks desde sitios relevantes</div>
-              <div><strong style={{ color: "#f59e0b" }}>Mes 1-2:</strong> Primeros visitantes llegan</div>
-              <div><strong style={{ color: "#f59e0b" }}>Mes 3:</strong> Primeros ingresos comienzan</div>
-              <div><strong style={{ color: "#f59e0b" }}>Mes 6+:</strong> Ingresos pasivos recurrentes</div>
-            </div>
-
-            <div style={{ marginTop: 28, padding: 20, background: "rgba(245,158,11,.06)", border: "1px solid rgba(245,158,11,.15)", borderRadius: 14 }}>
-              <h4 style={{ color: "#f59e0b", fontSize: 14, marginBottom: 12, fontFamily: "'Space Mono',monospace" }}>📊 Estimación Realista de Ingresos</h4>
-              <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 2 }}>
-                <div>Mes 1-2: <strong style={{ color: "#e2e8f0" }}>50-300 visitantes</strong></div>
-                <div>Mes 3: <strong style={{ color: "#e2e8f0" }}>500-2,000 visitantes</strong></div>
-                <div>Mes 6: <strong style={{ color: "#e2e8f0" }}>2,000-10,000+ visitantes/mes</strong></div>
-                <div>Ingresos: <strong style={{ color: "#22c55e" }}>EUR 300-5,000+/mes</strong></div>
-              </div>
-            </div>
-
-            <p style={{ color: "#64748b", fontSize: 14, marginTop: 28, fontStyle: "italic" }}>Tu viaje empieza ahora. CREA. Vuelve en 1 mes a decirnos cuánto ganaste. 🚀</p>
+        {/* Final summary */}
+        {allDone && <div style={{marginTop:48,padding:'44px 32px',background:'linear-gradient(145deg,rgba(34,197,94,.06),rgba(245,158,11,.04))',border:'2px solid rgba(34,197,94,.2)',borderRadius:24,textAlign:'center',animation:'fadeIn .6s'}}>
+          <div style={{fontSize:60,marginBottom:16}}>🏆</div>
+          <h2 className="mono" style={{fontSize:28,fontWeight:800,marginBottom:8,background:'linear-gradient(135deg,#22c55e,#f59e0b)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>¡MISIÓN COMPLETA!</h2>
+          <p style={{color:'#94a3b8',fontSize:15,marginBottom:32}}>Has completado las 7 fases. Tu sitio SEO de calculadoras está listo.</p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:12,marginBottom:32}}>
+            {["Investigación","100+ Keywords","N URLs creadas","SEO perfecto","Legal completo","Publicado"].map((l,i)=>
+              <div key={i} style={{background:'rgba(34,197,94,.06)',border:'1px solid rgba(34,197,94,.12)',borderRadius:10,padding:12,fontSize:12,color:'#4ade80',fontWeight:600}}>✅ {l}</div>
+            )}
           </div>
-        )}
-
-        {/* Timeline summary table */}
-        {!allDone && (
-          <div style={{ marginTop: 40, background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 14, padding: 24 }}>
-            <h3 style={{ color: "#94a3b8", fontSize: 14, marginBottom: 16, fontFamily: "'Space Mono',monospace" }}>📊 Timeline Estimado</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "8px 20px", fontSize: 13 }}>
-              <span style={{ color: "#64748b" }}>Mínimo (5 URLs)</span><span style={{ color: "#e2e8f0", fontFamily: "'Space Mono',monospace" }}>2-2.5 horas</span>
-              <span style={{ color: "#64748b" }}>Estándar (10 URLs)</span><span style={{ color: "#e2e8f0", fontFamily: "'Space Mono',monospace" }}>2.5-3.5 horas</span>
-              <span style={{ color: "#64748b" }}>Extenso (20+ URLs)</span><span style={{ color: "#e2e8f0", fontFamily: "'Space Mono',monospace" }}>4+ horas</span>
+          <h3 className="mono" style={{color:'#e2e8f0',fontSize:16,marginBottom:14}}>📈 Próximos Pasos</h3>
+          <div style={{textAlign:'left',maxWidth:420,margin:'0 auto',color:'#94a3b8',fontSize:13,lineHeight:2.4}}>
+            <div><strong style={{color:'#f59e0b'}}>Semana 1:</strong> Monitorea Google Analytics</div>
+            <div><strong style={{color:'#f59e0b'}}>Semana 2-4:</strong> Crea 2-3 backlinks</div>
+            <div><strong style={{color:'#f59e0b'}}>Mes 1-2:</strong> Primeros visitantes</div>
+            <div><strong style={{color:'#f59e0b'}}>Mes 3:</strong> Primeros ingresos</div>
+            <div><strong style={{color:'#f59e0b'}}>Mes 6+:</strong> Ingresos pasivos recurrentes</div>
+          </div>
+          <div style={{marginTop:28,padding:20,background:'rgba(245,158,11,.06)',border:'1px solid rgba(245,158,11,.15)',borderRadius:14}}>
+            <h4 className="mono" style={{color:'#f59e0b',fontSize:14,marginBottom:12}}>📊 Estimación Realista de Ingresos</h4>
+            <div style={{color:'#94a3b8',fontSize:13,lineHeight:2}}>
+              <div>Mes 1-2: <strong style={{color:'#e2e8f0'}}>50-300 visitantes</strong></div>
+              <div>Mes 3: <strong style={{color:'#e2e8f0'}}>500-2,000 visitantes</strong></div>
+              <div>Mes 6: <strong style={{color:'#e2e8f0'}}>2,000-10,000+/mes</strong></div>
+              <div>Ingresos: <strong style={{color:'#22c55e'}}>EUR 300-5,000+/mes</strong></div>
             </div>
           </div>
-        )}
+          <p style={{color:'#64748b',fontSize:14,marginTop:28,fontStyle:'italic'}}>Tu viaje empieza ahora. CREA. Vuelve en 1 mes. 🚀</p>
+          <button onClick={()=>{setCompleted([]);setActive(null)}} style={{marginTop:20,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',color:'#64748b',padding:'10px 24px',borderRadius:10,cursor:'pointer',fontSize:12,fontFamily:'inherit'}}>↺ Reiniciar progreso</button>
+        </div>}
+
+        {!allDone && <div style={{marginTop:40,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)',borderRadius:14,padding:24}}>
+          <h3 className="mono" style={{color:'#94a3b8',fontSize:14,marginBottom:16}}>📊 Timeline Estimado</h3>
+          <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:'8px 20px',fontSize:13}}>
+            <span style={{color:'#64748b'}}>Mínimo (5 URLs)</span><span className="mono" style={{color:'#e2e8f0'}}>2-2.5 horas</span>
+            <span style={{color:'#64748b'}}>Estándar (10 URLs)</span><span className="mono" style={{color:'#e2e8f0'}}>2.5-3.5 horas</span>
+            <span style={{color:'#64748b'}}>Extenso (20+ URLs)</span><span className="mono" style={{color:'#e2e8f0'}}>4+ horas</span>
+          </div>
+        </div>}
       </div>
     </div>
   );
 }
+
+ReactDOM.createRoot(document.getElementById('app')).render(<App/>);
+</script>
+</body>
+</html>
